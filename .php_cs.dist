@@ -1,0 +1,12 @@
+<?php
+
+$classLoader = require __DIR__ . '/vendor/autoload.php';
+$classLoader->register(true);
+
+$finder = PhpCsFixer\Finder::create()
+    ->in([
+        __DIR__.'/src',
+        __DIR__.'/tests',
+    ]);
+
+return (new Schwarzer\PhpCs\Styles)($finder);
