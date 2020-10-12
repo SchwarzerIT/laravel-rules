@@ -1,7 +1,7 @@
 # Very short description of the package
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/schwarzer/laravel-rules.svg?style=flat-square)](https://packagist.org/packages/schwarzer/laravel-rules)
-[![Build Status](https://img.shields.io/travis/schwarzer/laravel-rules/master.svg?style=flat-square)](https://travis-ci.org/schwarzer/laravel-rules)
+[![Build Status](https://img.shields.io/travis/SchwarzerIT/laravel-rules/master.svg?style=flat-square)](https://travis-ci.org/schwarzer/laravel-rules)
 [![Total Downloads](https://img.shields.io/packagist/dt/schwarzer/laravel-rules.svg?style=flat-square)](https://packagist.org/packages/schwarzer/laravel-rules)
 
 ## Installation
