@@ -6,6 +6,7 @@ use DomainException;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
@@ -31,26 +32,26 @@ class HaveIBeenPwnedTest extends TestCase
         $this->rule = new HaveIBeenPwned;
     }
 
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [SchwarzerLaravelRulesServiceProvider::class];
     }
 
-    protected function getEnvironmentSetUp($app)
+    protected function getEnvironmentSetUp($app): void
     {
         $app['config']->set('cache.driver', 'array');
     }
 
-    public function testPasswordIsAnUnsafePassword()
+    public function testPasswordIsAnUnsafePassword(): void
     {
         $this->fakeRequestForPasswordPassword();
 
         $passwordToValidate = $this->passwordPassword;
 
-        $this->assertFalse($this->rule->passes($this->attribute, $passwordToValidate));
+        self::assertFalse($this->rule->passes($this->attribute, $passwordToValidate));
     }
 
-    public function testRuleWorksWithMinimum()
+    public function testRuleWorksWithMinimum(): void
     {
         $this->fakeRequestForPasswordPassword();
 
@@ -58,36 +59,37 @@ class HaveIBeenPwnedTest extends TestCase
 
         $this->rule = new HaveIBeenPwned(1);
 
-        $this->assertFalse($this->rule->passes($this->attribute, $passwordToValidate));
+        self::assertFalse($this->rule->passes($this->attribute, $passwordToValidate));
 
         $this->rule = new HaveIBeenPwned(PHP_INT_MAX);
 
-        $this->assertTrue($this->rule->passes($this->attribute, $passwordToValidate));
+        self::assertTrue($this->rule->passes($this->attribute, $passwordToValidate));
     }
 
-    public function testCacheWorksForRepetitiveChecks()
+    public function testCacheWorksForRepetitiveChecks(): void
     {
+        Event::fake();
         $this->fakeRequestForPasswordPassword();
 
         $passwordToValidate = $this->passwordPassword;
 
-        $this->expectsEvents(CacheMissed::class);
-        $this->assertFalse($this->rule->passes($this->attribute, $passwordToValidate));
+        self::assertFalse($this->rule->passes($this->attribute, $passwordToValidate));
+        Event::assertDispatched(CacheMissed::class);
 
-        $this->expectsEvents(CacheHit::class);
-        $this->assertFalse($this->rule->passes($this->attribute, $passwordToValidate));
+        self::assertFalse($this->rule->passes($this->attribute, $passwordToValidate));
+        Event::assertDispatched(CacheHit::class);
     }
 
-    public function testLongRandomCharactersAreASafePassword()
+    public function testLongRandomCharactersAreASafePassword(): void
     {
         $this->fakeRequestForPasswordRandom();
 
         $passwordToValidate = $this->passwordRandom;
 
-        $this->assertTrue($this->rule->passes($this->attribute, $passwordToValidate));
+        self::assertTrue($this->rule->passes($this->attribute, $passwordToValidate));
     }
 
-    public function testExceptionsDontFailThePasswordCheck()
+    public function testExceptionsDontFailThePasswordCheck(): void
     {
         Http::fake([
             $this->rule->apiEndpoint . '*' => Http::response(null, 500, []),
@@ -95,10 +97,10 @@ class HaveIBeenPwnedTest extends TestCase
 
         $passwordToValidate = $this->passwordPassword;
 
-        $this->assertTrue($this->rule->passes($this->attribute, $passwordToValidate));
+        self::assertTrue($this->rule->passes($this->attribute, $passwordToValidate));
     }
 
-    public function testValidatorShortHandleWorks()
+    public function testValidatorShortHandleWorks(): void
     {
         $this->fakeRequestForPasswordRandom();
 
@@ -110,10 +112,10 @@ class HaveIBeenPwnedTest extends TestCase
             $this->attribute => 'hibp',
         ];
 
-        $this->assertTrue(Validator::make($input, $rules)->passes());
+        self::assertTrue(Validator::make($input, $rules)->passes());
     }
 
-    public function testValidatorShortHandleWorksWithMinimum()
+    public function testValidatorShortHandleWorksWithMinimum(): void
     {
         $this->fakeRequestForPasswordPassword();
 
@@ -129,7 +131,7 @@ class HaveIBeenPwnedTest extends TestCase
             $this->attribute => 'hibp:min=' . $min,
         ];
 
-        $this->assertTrue(Validator::make($input, $rules)->passes());
+        self::assertTrue(Validator::make($input, $rules)->passes());
 
         // at least once in the result set
 
@@ -139,10 +141,10 @@ class HaveIBeenPwnedTest extends TestCase
             $this->attribute => 'hibp:min=' . $min,
         ];
 
-        $this->assertFalse(Validator::make($input, $rules)->passes());
+        self::assertFalse(Validator::make($input, $rules)->passes());
     }
 
-    public function testValidatorShortHandleOnlyAcceptsMinOption()
+    public function testValidatorShortHandleOnlyAcceptsMinOption(): void
     {
         $this->fakeRequestForPasswordPassword();
 
@@ -158,7 +160,7 @@ class HaveIBeenPwnedTest extends TestCase
             $this->attribute => 'hibp:min=' . $min,
         ];
 
-        $this->assertFalse(Validator::make($input, $rules)->passes());
+        self::assertFalse(Validator::make($input, $rules)->passes());
 
         // at least once in the result set
 
@@ -173,7 +175,7 @@ class HaveIBeenPwnedTest extends TestCase
         Validator::make($input, $rules)->passes();
     }
 
-    public function testValidatorClassInstanceWorks()
+    public function testValidatorClassInstanceWorks(): void
     {
         $this->fakeRequestForPasswordRandom();
 
@@ -185,10 +187,10 @@ class HaveIBeenPwnedTest extends TestCase
             $this->attribute => $this->rule,
         ];
 
-        $this->assertTrue(Validator::make($input, $rules)->passes());
+        self::assertTrue(Validator::make($input, $rules)->passes());
     }
 
-    public function testValidationMessageIsReturned()
+    public function testValidationMessageIsReturned(): void
     {
         $this->fakeRequestForPasswordPassword();
 
@@ -202,7 +204,7 @@ class HaveIBeenPwnedTest extends TestCase
 
         $validated = Validator::make($input, $rules)->errors();
 
-        $this->assertEquals('validation.hibp', $validated->first($this->attribute));
+        self::assertEquals('validation.hibp', $validated->first($this->attribute));
 
         $rules = [
             $this->attribute => $this->rule,
@@ -210,7 +212,7 @@ class HaveIBeenPwnedTest extends TestCase
 
         $validated = Validator::make($input, $rules)->errors();
 
-        $this->assertEquals('validation.hibp', $validated->first($this->attribute));
+        self::assertEquals('validation.hibp', $validated->first($this->attribute));
     }
 
     private function fakeRequestForPasswordPassword(): void
