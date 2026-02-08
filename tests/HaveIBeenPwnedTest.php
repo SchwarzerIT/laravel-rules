@@ -5,7 +5,7 @@ namespace Schwarzer\Laravel\Rules\Tests;
 use DomainException;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
-use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -17,7 +17,7 @@ use Schwarzer\Laravel\Rules\SchwarzerLaravelRulesServiceProvider;
 
 class HaveIBeenPwnedTest extends TestCase
 {
-    private Rule $rule;
+    private ValidationRule $rule;
 
     private string $passwordPassword = 'password';
 

@@ -8,7 +8,7 @@ use function class_basename;
 use function count;
 use DomainException;
 use function explode;
-use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -25,7 +25,7 @@ use function throw_unless;
 use Throwable;
 use function trim;
 
-class HaveIBeenPwned implements Rule
+class HaveIBeenPwned implements ValidationRule
 {
     private int $minimum;
 
@@ -69,9 +69,21 @@ class HaveIBeenPwned implements Rule
         }
     }
 
-    public function validate(string $attribute, $value, array $params): bool
+    public function validate(string $attribute, mixed $value, \Closure $fail): void
     {
-        $this->minimum = self::getMinimumFromParams($params);
+        if (!$this->passes($attribute, $value)) {
+            $fail(Lang::get('validation.hibp', ['attribute' => $attribute, 'min' => $this->minimum]));
+        }
+    }
+
+    /**
+     * Support for string shorthand validation (e.g., 'hibp' or 'hibp:min=5')
+     */
+    public function __invoke(string $attribute, mixed $value, array $parameters): bool
+    {
+        if (!empty($parameters)) {
+            $this->minimum = self::getMinimumFromParams($parameters);
+        }
 
         return $this->passes($attribute, $value);
     }
