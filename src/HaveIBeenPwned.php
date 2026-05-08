@@ -2,8 +2,13 @@
 
 namespace Schwarzer\Laravel\Rules;
 
+use function abs;
+use function array_filter;
+use function class_basename;
 use Closure;
+use function count;
 use DomainException;
+use function explode;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\RequestException;
@@ -14,22 +19,17 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Str;
-use Throwable;
-use function abs;
-use function array_filter;
-use function class_basename;
-use function count;
-use function explode;
 use function is_numeric;
 use function json_encode;
+use const JSON_THROW_ON_ERROR;
+use function mb_trim;
+use const PHP_EOL;
 use function sha1;
 use function sprintf;
-use function trim;
-use const PHP_EOL;
+use Throwable;
 
 /**
  * Class HaveIBeenPwned
- * @package Schwarzer\Laravel\Rules
  */
 class HaveIBeenPwned implements ValidationRule
 {
@@ -55,7 +55,7 @@ class HaveIBeenPwned implements ValidationRule
      */
     public function __construct(float|int|string|null $minimum = 1)
     {
-        $this->minimum = (int)$minimum;
+        $this->minimum = (int) $minimum;
     }
 
     /**
@@ -94,7 +94,7 @@ class HaveIBeenPwned implements ValidationRule
      */
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        if (!$this->passes($attribute, $value)) {
+        if (! $this->passes($attribute, $value)) {
             $fail(Lang::get('validation.hibp', ['attribute' => $attribute, 'min' => $this->minimum]));
         }
     }
@@ -110,7 +110,7 @@ class HaveIBeenPwned implements ValidationRule
      */
     public function __invoke(string $attribute, mixed $value, array $parameters): bool
     {
-        if (!empty($parameters)) {
+        if (! empty($parameters)) {
             $this->minimum = self::getMinimumFromParams($parameters);
         }
 
@@ -157,7 +157,7 @@ class HaveIBeenPwned implements ValidationRule
             Cache::remember(
                 $cacheKey,
                 Carbon::now()->addWeek(),
-                fn() => $this->makeRequest($prefix)
+                fn () => $this->makeRequest($prefix),
             );
     }
 
@@ -170,7 +170,7 @@ class HaveIBeenPwned implements ValidationRule
     private function apiResultCollection(string $prefix): Collection
     {
         return Collection::make(explode(PHP_EOL, $this->getApiResult($prefix)))
-            ->map(fn(string $hashAndResultCount) => $this->toHashAndResultCountArrayOrNull($hashAndResultCount))
+            ->map(fn (string $hashAndResultCount) => $this->toHashAndResultCountArrayOrNull($hashAndResultCount))
             ->filter()
             ->pluck('value', 'key');
     }
@@ -200,7 +200,7 @@ class HaveIBeenPwned implements ValidationRule
      */
     private function toHashAndResultCountArrayOrNull(string $hashAndResultCount): ?array
     {
-        $pair = explode(':', trim($hashAndResultCount), 2);
+        $pair = explode(':', mb_trim($hashAndResultCount), 2);
 
         return 2 === count($pair) && is_numeric(Arr::last($pair))
             ? ['key' => Arr::first($pair), 'value' => Arr::last($pair)]
@@ -226,24 +226,24 @@ class HaveIBeenPwned implements ValidationRule
                 sprintf(
                     'The rule %s only accepts one argument ("min"), more were provided: %s',
                     class_basename(self::class),
-                    json_encode($parameters, JSON_THROW_ON_ERROR)
-                )
+                    json_encode($parameters, JSON_THROW_ON_ERROR),
+                ),
             );
         }
 
-        $firstParameter = (string)Arr::first($filtered);
+        $firstParameter = (string) Arr::first($filtered);
 
-        if (!Str::of($firstParameter)->startsWith('min=')) {
+        if (! Str::of($firstParameter)->startsWith('min=')) {
             throw new DomainException(
                 sprintf(
                     'The rule %s only accepts one argument ("min"), something different provided: %s',
                     class_basename(self::class),
-                    $firstParameter
-                )
+                    $firstParameter,
+                ),
             );
         }
 
-        $minimum = abs((int)Str::after($firstParameter, 'min='));
+        $minimum = abs((int) Str::after($firstParameter, 'min='));
 
         return 0 === $minimum ? 1 : $minimum;
     }

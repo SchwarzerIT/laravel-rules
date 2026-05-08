@@ -15,6 +15,7 @@ class SchwarzerLaravelRulesServiceProvider extends ServiceProvider
     {
         Validator::extend(self::SHORTS[HaveIBeenPwned::class], function ($attribute, $value, $parameters) {
             $rule = new HaveIBeenPwned();
+
             return $rule($attribute, $value, $parameters);
         });
     }

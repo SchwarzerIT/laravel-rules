@@ -17,13 +17,13 @@
         }
     ],
     "require": {
-        "php": "^8.3|^8.4",
+        "php": "^8.4",
         "guzzlehttp/guzzle": "^7.8",
-        "illuminate/support": "^11.0|^12.0",
+        "illuminate/support": "^11.0|^12.0|^13.0",
         "ext-json": "*"
     },
     "require-dev": {
-        "orchestra/testbench": "^9.0|^10.0",
+        "orchestra/testbench": "^9.0|^10.0|^11.0",
         "php-coveralls/php-coveralls": "^2.7",
         "phpunit/phpunit": "^11.0",
         "schwarzer/php-code-style": "^3.0"
@@ -41,7 +41,7 @@
     "scripts": {
         "test": "vendor/bin/phpunit --configuration=phpunit.xml.dist",
         "test-coverage": "vendor/bin/phpunit --configuration=phpunit.xml.dist --coverage-text --colors=never",
-        "php-cs-fixer": "vendor/bin/php-cs-fixer fix --diff --config=.php_cs.dist --allow-risky=yes"
+        "php-cs-fixer": "vendor/bin/php-cs-fixer fix --diff --allow-risky=yes"
     },
     "config": {
         "sort-packages": true
